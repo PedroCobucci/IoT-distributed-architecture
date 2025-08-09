@@ -1,0 +1,11 @@
+{
+  "namespace": "inverter",
+  "type": "record",
+  "name": "Inverter",
+  "fields": [
+    {"name": "device_id", "type": "string"},
+    {"name": "voltage", "type": "float"},
+    {"name": "current", "type": "float"},
+    {"name": "power", "type": "float"}
+  ]
+}

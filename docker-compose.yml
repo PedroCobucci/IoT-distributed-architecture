@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper:3.9
+    container_name: zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: bitnami/kafka:3.6
+    container_name: kafka
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+
+  data-generator:
+    build: ./data_generator
+    container_name: data-generator
+    volumes:
+      - ./data_generator/app:/app
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=measurements
+    depends_on:
+      - kafka
+
+  python-consumer:
+    build: ./python_consumer
+    container_name: python-consumer
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=measurements
+      - SQLITE_PATH=/data/measurements.db
+    volumes:
+      - ./python_consumer/app:/app
+      - ./python_consumer/app/database:/app/database
+    depends_on:
+      - kafka
+
+  grafana:
+    build: ./python_consumer/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
+    volumes:
+      - ./data:/var/lib/grafana
+    depends_on:
+      - python-consumer
