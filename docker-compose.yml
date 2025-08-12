@@ -65,8 +65,9 @@ services:
       - "3000:3000"
     environment:
       - GF_INSTALL_PLUGINS=frser-sqlite-datasource
+    user: "${UID}:${GID}"
     volumes:
-      - ./grafana:/grafana
+      - ./grafana/data:/var/lib/grafana
     networks:
       - spark-net
     depends_on:
