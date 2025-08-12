@@ -6,6 +6,8 @@ services:
     container_name: zookeeper
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - spark-net
     ports:
       - "2181:2181"
 
@@ -21,6 +23,8 @@ services:
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
     ports:
       - "9092:9092"
+    networks:
+      - spark-net
     depends_on:
       - zookeeper
 
@@ -28,10 +32,13 @@ services:
     build: ./data_generator
     container_name: data-generator
     volumes:
-      - ./data_generator/app:/app
+      - ./data_generator:/app
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_TOPIC=measurements
+      - KAFKA_TOPIC=equipments
+    command: ["make", "start"]
+    networks:
+      - spark-net
     depends_on:
       - kafka
 
@@ -40,22 +47,99 @@ services:
     container_name: python-consumer
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_TOPIC=measurements
-      - SQLITE_PATH=/data/measurements.db
+      - KAFKA_TOPIC=equipments
+      - SQLITE_PATH=/database/measurements.db
     volumes:
-      - ./python_consumer/app:/app
-      - ./python_consumer/app/database:/app/database
+      - ./python_consumer:/app
+      - ./database:/app/database
+    command: ["make", "start"]
+    networks:
+      - spark-net
     depends_on:
       - kafka
 
   grafana:
-    build: ./python_consumer/grafana
+    build: ./grafana
     container_name: grafana
     ports:
       - "3000:3000"
     environment:
       - GF_INSTALL_PLUGINS=frser-sqlite-datasource
     volumes:
-      - ./data:/var/lib/grafana
+      - ./grafana:/grafana
+    networks:
+      - spark-net
     depends_on:
       - python-consumer
+
+  spark-master:
+    image: bitnami/spark:3.5
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    hostname: spark-master
+    volumes:
+      - ./spark_consumer/app/spark-data:/spark-data
+    networks:
+      - spark-net
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+  spark-worker:
+    image: bitnami/spark:3.5
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    depends_on:
+      - spark-master
+    volumes:
+      - ./spark_consumer/app/spark-data:/spark-data
+    networks:
+      - spark-net
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+  
+  spark-consumer:
+    build: ./spark_consumer
+    container_name: spark-consumer
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_TOPIC=equipments
+      - SPARK_MASTER=spark://spark-master:7077  # Add this
+    volumes:
+      - ./spark_consumer:/app
+    networks:
+      - spark-net
+    depends_on:
+      - kafka
+      - spark-master
+      - spark-worker
+
+
+volumes:
+  spark-data:
+    external: true
+
+networks:
+  spark-net:
+    driver: bridge

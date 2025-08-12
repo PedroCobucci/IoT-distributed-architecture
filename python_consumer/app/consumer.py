@@ -1,29 +1,55 @@
+import os
 import io
+from confluent_kafka import Consumer, KafkaException
+import fastavro
 import fastavro.schema
-import fastavro.io
-from fastavro import reader
-from confluent_kafka import Consumer
+import json
 
-c = Consumer({
-    'bootstrap.servers': 'kafka:9092',
-    'group.id': 'mygroup',
-    'auto.offset.reset': 'earliest'
+KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+KAFKA_TOPIC =  os.getenv("KAFKA_TOPIC", "equipments")
+KAFKA_GROUP_ID = os.getenv("KAFKA_GROUP_ID", "inverter-group")
+
+SCHEMA_FILE = "./app/schemas/inverter.avsc" 
+try:
+    with open(SCHEMA_FILE, "r") as f:
+        schema_json = f.read()
+    schema = fastavro.schema.parse_schema(json.loads(schema_json))
+    print(f"Schema loaded successfully from {SCHEMA_FILE}")
+except FileNotFoundError:
+    print(f"Error: The schema file '{SCHEMA_FILE}' was not found.")
+    exit(1)
+except Exception as e:
+    print(f"Error parsing the schema file: {e}")
+    exit(1)
+
+consumer = Consumer({
+    "bootstrap.servers": KAFKA_BOOTSTRAP_SERVERS,
+    "group.id": KAFKA_GROUP_ID,
+    "auto.offset.reset": "earliest",
 })
 
-c.subscribe(['measurements'])
+consumer.subscribe([KAFKA_TOPIC])
 
-while True:
-    msg = c.poll(1.0)
+try:
+    print(f"Subscribed to topic '{KAFKA_TOPIC}'. Waiting for messages...")
+    while True:
+        message = consumer.poll(1.0)
+        if message is None:
+            continue
+        if message.error():
+            if message.error().code() == KafkaException._PARTITION_EOF:
+                continue
+            else:
+                print(f"Consumer error: {message.error()}")
+                break
 
-    if msg is None:
-        continue
-    if msg.error():
-        print("Consumer error: {}".format(msg.error()))
-        continue
+        message_bytes = io.BytesIO(message.value())
 
-    bytes_reader = io.BytesIO(msg.value())
-    avro_reader = reader(bytes_reader)
-    for record in avro_reader:
-        print('Received message: {}'.format(record))
-
-c.close()
+        decoded_record = fastavro.schemaless_reader(message_bytes, schema)
+        
+        print(f"Decoded Avro record: {decoded_record}")
+        
+except KeyboardInterrupt:
+    print("Shutting down consumer...")
+finally:
+    consumer.close()

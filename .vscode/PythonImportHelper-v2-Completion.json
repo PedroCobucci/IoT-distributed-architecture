@@ -1,0 +1,309 @@
+[
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "random",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "random",
+        "description": "random",
+        "detail": "random",
+        "documentation": {}
+    },
+    {
+        "label": "io",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "io",
+        "description": "io",
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "Producer",
+        "importPath": "confluent_kafka",
+        "description": "confluent_kafka",
+        "isExtraImport": true,
+        "detail": "confluent_kafka",
+        "documentation": {}
+    },
+    {
+        "label": "Consumer",
+        "importPath": "confluent_kafka",
+        "description": "confluent_kafka",
+        "isExtraImport": true,
+        "detail": "confluent_kafka",
+        "documentation": {}
+    },
+    {
+        "label": "KafkaException",
+        "importPath": "confluent_kafka",
+        "description": "confluent_kafka",
+        "isExtraImport": true,
+        "detail": "confluent_kafka",
+        "documentation": {}
+    },
+    {
+        "label": "fastavro",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "fastavro",
+        "description": "fastavro",
+        "detail": "fastavro",
+        "documentation": {}
+    },
+    {
+        "label": "fastavro.schema",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "fastavro.schema",
+        "description": "fastavro.schema",
+        "detail": "fastavro.schema",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "SparkSession",
+        "importPath": "pyspark.sql",
+        "description": "pyspark.sql",
+        "isExtraImport": true,
+        "detail": "pyspark.sql",
+        "documentation": {}
+    },
+    {
+        "label": "from_avro",
+        "importPath": "pyspark.sql.avro.functions",
+        "description": "pyspark.sql.avro.functions",
+        "isExtraImport": true,
+        "detail": "pyspark.sql.avro.functions",
+        "documentation": {}
+    },
+    {
+        "label": "to_avro",
+        "importPath": "pyspark.sql.avro.functions",
+        "description": "pyspark.sql.avro.functions",
+        "isExtraImport": true,
+        "detail": "pyspark.sql.avro.functions",
+        "documentation": {}
+    },
+    {
+        "label": "col",
+        "importPath": "pyspark.sql.functions",
+        "description": "pyspark.sql.functions",
+        "isExtraImport": true,
+        "detail": "pyspark.sql.functions",
+        "documentation": {}
+    },
+    {
+        "label": "generate_measurement",
+        "kind": 2,
+        "importPath": "data_generator.app.producer",
+        "description": "data_generator.app.producer",
+        "peekOfCode": "def generate_measurement():\n    voltage = round(random.uniform(210, 230), 2)\n    current = round(random.uniform(4, 6), 2)\n    power = round(voltage * current, 2)\n    return {\n        \"device_id\": f\"inverter-{random.randint(1,3)}\",\n        \"voltage\": voltage,\n        \"current\": current,\n        \"power\": power,\n    }",
+        "detail": "data_generator.app.producer",
+        "documentation": {}
+    },
+    {
+        "label": "serialize_avro",
+        "kind": 2,
+        "importPath": "data_generator.app.producer",
+        "description": "data_generator.app.producer",
+        "peekOfCode": "def serialize_avro(data, schema):\n    bytes_writer = io.BytesIO()\n    fastavro.schemaless_writer(bytes_writer, schema, data)\n    return bytes_writer.getvalue()\nif __name__ == \"__main__\":\n    print(f\"Starting data generator for topic '{KAFKA_TOPIC}'...\")\n    try:\n        while True:\n            measurement = generate_measurement()\n            payload = serialize_avro(measurement, schema)",
+        "detail": "data_generator.app.producer",
+        "documentation": {}
+    },
+    {
+        "label": "KAFKA_BOOTSTRAP_SERVERS",
+        "kind": 5,
+        "importPath": "data_generator.app.producer",
+        "description": "data_generator.app.producer",
+        "peekOfCode": "KAFKA_BOOTSTRAP_SERVERS = os.getenv(\"KAFKA_BOOTSTRAP_SERVERS\", \"kafka:9092\")\nKAFKA_TOPIC =  os.getenv(\"KAFKA_TOPIC\", \"equipments\")\nSCHEMA_FILE = \"./app/schemas/inverter.avsc\" \ntry:\n    with open(SCHEMA_FILE, \"r\") as f:\n        schema_json = f.read()\n    schema = fastavro.schema.parse_schema(json.loads(schema_json))\n    print(f\"Schema loaded successfully from {SCHEMA_FILE}\")\nexcept FileNotFoundError:\n    print(f\"Error: The schema file '{SCHEMA_FILE}' was not found.\")",
+        "detail": "data_generator.app.producer",
+        "documentation": {}
+    },
+    {
+        "label": "KAFKA_TOPIC",
+        "kind": 5,
+        "importPath": "data_generator.app.producer",
+        "description": "data_generator.app.producer",
+        "peekOfCode": "KAFKA_TOPIC =  os.getenv(\"KAFKA_TOPIC\", \"equipments\")\nSCHEMA_FILE = \"./app/schemas/inverter.avsc\" \ntry:\n    with open(SCHEMA_FILE, \"r\") as f:\n        schema_json = f.read()\n    schema = fastavro.schema.parse_schema(json.loads(schema_json))\n    print(f\"Schema loaded successfully from {SCHEMA_FILE}\")\nexcept FileNotFoundError:\n    print(f\"Error: The schema file '{SCHEMA_FILE}' was not found.\")\n    exit(1)",
+        "detail": "data_generator.app.producer",
+        "documentation": {}
+    },
+    {
+        "label": "SCHEMA_FILE",
+        "kind": 5,
+        "importPath": "data_generator.app.producer",
+        "description": "data_generator.app.producer",
+        "peekOfCode": "SCHEMA_FILE = \"./app/schemas/inverter.avsc\" \ntry:\n    with open(SCHEMA_FILE, \"r\") as f:\n        schema_json = f.read()\n    schema = fastavro.schema.parse_schema(json.loads(schema_json))\n    print(f\"Schema loaded successfully from {SCHEMA_FILE}\")\nexcept FileNotFoundError:\n    print(f\"Error: The schema file '{SCHEMA_FILE}' was not found.\")\n    exit(1)\nexcept Exception as e:",
+        "detail": "data_generator.app.producer",
+        "documentation": {}
+    },
+    {
+        "label": "producer",
+        "kind": 5,
+        "importPath": "data_generator.app.producer",
+        "description": "data_generator.app.producer",
+        "peekOfCode": "producer = Producer({\"bootstrap.servers\": KAFKA_BOOTSTRAP_SERVERS})\ndef generate_measurement():\n    voltage = round(random.uniform(210, 230), 2)\n    current = round(random.uniform(4, 6), 2)\n    power = round(voltage * current, 2)\n    return {\n        \"device_id\": f\"inverter-{random.randint(1,3)}\",\n        \"voltage\": voltage,\n        \"current\": current,\n        \"power\": power,",
+        "detail": "data_generator.app.producer",
+        "documentation": {}
+    },
+    {
+        "label": "KAFKA_BOOTSTRAP_SERVERS",
+        "kind": 5,
+        "importPath": "python_consumer.app.consumer",
+        "description": "python_consumer.app.consumer",
+        "peekOfCode": "KAFKA_BOOTSTRAP_SERVERS = os.getenv(\"KAFKA_BOOTSTRAP_SERVERS\", \"kafka:9092\")\nKAFKA_TOPIC =  os.getenv(\"KAFKA_TOPIC\", \"equipments\")\nKAFKA_GROUP_ID = os.getenv(\"KAFKA_GROUP_ID\", \"inverter-group\")\nSCHEMA_FILE = \"./app/schemas/inverter.avsc\" \ntry:\n    with open(SCHEMA_FILE, \"r\") as f:\n        schema_json = f.read()\n    schema = fastavro.schema.parse_schema(json.loads(schema_json))\n    print(f\"Schema loaded successfully from {SCHEMA_FILE}\")\nexcept FileNotFoundError:",
+        "detail": "python_consumer.app.consumer",
+        "documentation": {}
+    },
+    {
+        "label": "KAFKA_TOPIC",
+        "kind": 5,
+        "importPath": "python_consumer.app.consumer",
+        "description": "python_consumer.app.consumer",
+        "peekOfCode": "KAFKA_TOPIC =  os.getenv(\"KAFKA_TOPIC\", \"equipments\")\nKAFKA_GROUP_ID = os.getenv(\"KAFKA_GROUP_ID\", \"inverter-group\")\nSCHEMA_FILE = \"./app/schemas/inverter.avsc\" \ntry:\n    with open(SCHEMA_FILE, \"r\") as f:\n        schema_json = f.read()\n    schema = fastavro.schema.parse_schema(json.loads(schema_json))\n    print(f\"Schema loaded successfully from {SCHEMA_FILE}\")\nexcept FileNotFoundError:\n    print(f\"Error: The schema file '{SCHEMA_FILE}' was not found.\")",
+        "detail": "python_consumer.app.consumer",
+        "documentation": {}
+    },
+    {
+        "label": "KAFKA_GROUP_ID",
+        "kind": 5,
+        "importPath": "python_consumer.app.consumer",
+        "description": "python_consumer.app.consumer",
+        "peekOfCode": "KAFKA_GROUP_ID = os.getenv(\"KAFKA_GROUP_ID\", \"inverter-group\")\nSCHEMA_FILE = \"./app/schemas/inverter.avsc\" \ntry:\n    with open(SCHEMA_FILE, \"r\") as f:\n        schema_json = f.read()\n    schema = fastavro.schema.parse_schema(json.loads(schema_json))\n    print(f\"Schema loaded successfully from {SCHEMA_FILE}\")\nexcept FileNotFoundError:\n    print(f\"Error: The schema file '{SCHEMA_FILE}' was not found.\")\n    exit(1)",
+        "detail": "python_consumer.app.consumer",
+        "documentation": {}
+    },
+    {
+        "label": "SCHEMA_FILE",
+        "kind": 5,
+        "importPath": "python_consumer.app.consumer",
+        "description": "python_consumer.app.consumer",
+        "peekOfCode": "SCHEMA_FILE = \"./app/schemas/inverter.avsc\" \ntry:\n    with open(SCHEMA_FILE, \"r\") as f:\n        schema_json = f.read()\n    schema = fastavro.schema.parse_schema(json.loads(schema_json))\n    print(f\"Schema loaded successfully from {SCHEMA_FILE}\")\nexcept FileNotFoundError:\n    print(f\"Error: The schema file '{SCHEMA_FILE}' was not found.\")\n    exit(1)\nexcept Exception as e:",
+        "detail": "python_consumer.app.consumer",
+        "documentation": {}
+    },
+    {
+        "label": "consumer",
+        "kind": 5,
+        "importPath": "python_consumer.app.consumer",
+        "description": "python_consumer.app.consumer",
+        "peekOfCode": "consumer = Consumer({\n    \"bootstrap.servers\": KAFKA_BOOTSTRAP_SERVERS,\n    \"group.id\": KAFKA_GROUP_ID,\n    \"auto.offset.reset\": \"earliest\",\n})\nconsumer.subscribe([KAFKA_TOPIC])\ntry:\n    print(f\"Subscribed to topic '{KAFKA_TOPIC}'. Waiting for messages...\")\n    while True:\n        message = consumer.poll(1.0)",
+        "detail": "python_consumer.app.consumer",
+        "documentation": {}
+    },
+    {
+        "label": "KAFKA_BOOTSTRAP_SERVERS",
+        "kind": 5,
+        "importPath": "spark_consumer.app.stream_processing",
+        "description": "spark_consumer.app.stream_processing",
+        "peekOfCode": "KAFKA_BOOTSTRAP_SERVERS = os.getenv(\"KAFKA_BOOTSTRAP_SERVERS\", \"kafka:9092\")\nKAFKA_TOPIC = KAFKA_TOPIC =  os.getenv(\"KAFKA_TOPIC\", \"equipments\")\nSPARK_MASTER = os.getenv(\"SPARK_MASTER\", \"spark://spark:7077\")\navro_schema = json.dumps({\n    \"namespace\": \"inverter\",\n    \"type\": \"record\",\n    \"name\": \"Inverter\",\n    \"fields\": [\n        {\"name\": \"device_id\", \"type\": \"string\"},\n        {\"name\": \"voltage\", \"type\": \"float\"},",
+        "detail": "spark_consumer.app.stream_processing",
+        "documentation": {}
+    },
+    {
+        "label": "KAFKA_TOPIC",
+        "kind": 5,
+        "importPath": "spark_consumer.app.stream_processing",
+        "description": "spark_consumer.app.stream_processing",
+        "peekOfCode": "KAFKA_TOPIC = KAFKA_TOPIC =  os.getenv(\"KAFKA_TOPIC\", \"equipments\")\nSPARK_MASTER = os.getenv(\"SPARK_MASTER\", \"spark://spark:7077\")\navro_schema = json.dumps({\n    \"namespace\": \"inverter\",\n    \"type\": \"record\",\n    \"name\": \"Inverter\",\n    \"fields\": [\n        {\"name\": \"device_id\", \"type\": \"string\"},\n        {\"name\": \"voltage\", \"type\": \"float\"},\n        {\"name\": \"current\", \"type\": \"float\"},",
+        "detail": "spark_consumer.app.stream_processing",
+        "documentation": {}
+    },
+    {
+        "label": "SPARK_MASTER",
+        "kind": 5,
+        "importPath": "spark_consumer.app.stream_processing",
+        "description": "spark_consumer.app.stream_processing",
+        "peekOfCode": "SPARK_MASTER = os.getenv(\"SPARK_MASTER\", \"spark://spark:7077\")\navro_schema = json.dumps({\n    \"namespace\": \"inverter\",\n    \"type\": \"record\",\n    \"name\": \"Inverter\",\n    \"fields\": [\n        {\"name\": \"device_id\", \"type\": \"string\"},\n        {\"name\": \"voltage\", \"type\": \"float\"},\n        {\"name\": \"current\", \"type\": \"float\"},\n        {\"name\": \"power\", \"type\": \"float\"}",
+        "detail": "spark_consumer.app.stream_processing",
+        "documentation": {}
+    },
+    {
+        "label": "avro_schema",
+        "kind": 5,
+        "importPath": "spark_consumer.app.stream_processing",
+        "description": "spark_consumer.app.stream_processing",
+        "peekOfCode": "avro_schema = json.dumps({\n    \"namespace\": \"inverter\",\n    \"type\": \"record\",\n    \"name\": \"Inverter\",\n    \"fields\": [\n        {\"name\": \"device_id\", \"type\": \"string\"},\n        {\"name\": \"voltage\", \"type\": \"float\"},\n        {\"name\": \"current\", \"type\": \"float\"},\n        {\"name\": \"power\", \"type\": \"float\"}\n    ]",
+        "detail": "spark_consumer.app.stream_processing",
+        "documentation": {}
+    },
+    {
+        "label": "spark",
+        "kind": 5,
+        "importPath": "spark_consumer.app.stream_processing",
+        "description": "spark_consumer.app.stream_processing",
+        "peekOfCode": "spark = SparkSession.builder \\\n    .appName(\"KafkaAvroConsumer\") \\\n    .master(SPARK_MASTER) \\\n    .config(\"spark.serializer\", \"org.apache.spark.serializer.KryoSerializer\") \\\n    .config(\"spark.kryo.registrationRequired\", \"false\") \\\n    .config(\"spark.jars.packages\", \"org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.apache.spark:spark-avro_2.12:3.5.0\") \\\n    .config(\"spark.sql.streaming.forceDeleteTempCheckpointLocation\", \"true\") \\\n    .config(\"spark.sql.streaming.checkpointLocation\", \"/tmp/checkpoints\") \\\n    .getOrCreate()\nspark.sparkContext.setLogLevel(\"ERROR\")",
+        "detail": "spark_consumer.app.stream_processing",
+        "documentation": {}
+    },
+    {
+        "label": "df",
+        "kind": 5,
+        "importPath": "spark_consumer.app.stream_processing",
+        "description": "spark_consumer.app.stream_processing",
+        "peekOfCode": "df = spark \\\n    .readStream \\\n    .format(\"kafka\") \\\n    .option(\"kafka.bootstrap.servers\", KAFKA_BOOTSTRAP_SERVERS) \\\n    .option(\"subscribe\", KAFKA_TOPIC) \\\n    .option(\"startingOffsets\", \"earliest\") \\\n    .load()\nparsed_df = df.select(from_avro(col(\"value\"), avro_schema).alias(\"data\"))\nfinal_df = parsed_df.select(\"data.*\")\nquery = final_df.writeStream \\",
+        "detail": "spark_consumer.app.stream_processing",
+        "documentation": {}
+    },
+    {
+        "label": "parsed_df",
+        "kind": 5,
+        "importPath": "spark_consumer.app.stream_processing",
+        "description": "spark_consumer.app.stream_processing",
+        "peekOfCode": "parsed_df = df.select(from_avro(col(\"value\"), avro_schema).alias(\"data\"))\nfinal_df = parsed_df.select(\"data.*\")\nquery = final_df.writeStream \\\n    .outputMode(\"append\") \\\n    .format(\"console\") \\\n    .option(\"truncate\", \"false\") \\\n    .start()\nquery.awaitTermination()",
+        "detail": "spark_consumer.app.stream_processing",
+        "documentation": {}
+    },
+    {
+        "label": "final_df",
+        "kind": 5,
+        "importPath": "spark_consumer.app.stream_processing",
+        "description": "spark_consumer.app.stream_processing",
+        "peekOfCode": "final_df = parsed_df.select(\"data.*\")\nquery = final_df.writeStream \\\n    .outputMode(\"append\") \\\n    .format(\"console\") \\\n    .option(\"truncate\", \"false\") \\\n    .start()\nquery.awaitTermination()",
+        "detail": "spark_consumer.app.stream_processing",
+        "documentation": {}
+    },
+    {
+        "label": "query",
+        "kind": 5,
+        "importPath": "spark_consumer.app.stream_processing",
+        "description": "spark_consumer.app.stream_processing",
+        "peekOfCode": "query = final_df.writeStream \\\n    .outputMode(\"append\") \\\n    .format(\"console\") \\\n    .option(\"truncate\", \"false\") \\\n    .start()\nquery.awaitTermination()",
+        "detail": "spark_consumer.app.stream_processing",
+        "documentation": {}
+    }
+]

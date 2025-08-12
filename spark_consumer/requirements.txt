@@ -1,5 +1,5 @@
 confluent-kafka
 fastavro
 requests
-attrs
-httpx
+sqlite-utils
+pyspark==3.5.0
